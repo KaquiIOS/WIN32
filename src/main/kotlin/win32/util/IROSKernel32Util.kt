@@ -1,12 +1,10 @@
 package org.example.win32.util
 
-import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.Tlhelp32
 import com.sun.jna.platform.win32.WinDef.DWORD
 import com.sun.jna.platform.win32.WinNT.HANDLE
 import org.example.win32.data.ProcessInfo
 import org.example.win32.intf.IROSKernel32
-import com.sun.jna.platform.win32.Kernel32.INSTANCE as KERNEL32
 
 class IROSKernel32Util {
 

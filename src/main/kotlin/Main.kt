@@ -2,7 +2,6 @@ package org.example
 
 import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.WinBase.SYSTEMTIME
-import org.example.win32.data.ProcessInfo
 import org.example.win32.util.IROSKernel32Util
 
 
