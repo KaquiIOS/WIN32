@@ -4,6 +4,7 @@ import com.sun.jna.Native
 import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.Tlhelp32
 import com.sun.jna.platform.win32.WinBase.SYSTEMTIME
+import com.sun.jna.platform.win32.WinDef.BOOL
 import com.sun.jna.platform.win32.WinDef.DWORD
 import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinNT.HANDLE
@@ -31,7 +32,22 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
          * Ref: https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot
          */
         val TH32CS_SNAPPROCESS: Long = 0x00000002
+
+
+        /**
+         * ReadProcessMemory를 사용하여 프로세스에서 메모리를 읽는 데 필요합니다
+         * ref : https://learn.microsoft.com/ko-kr/windows/win32/procthread/process-security-and-access-rights
+         */
+        val PROCESS_VM_READ: Long = 0x0010
+
+        /**
+         * 토큰, 종료 코드 및 우선 순위 클래스와 같은 프로세스에 대한 특정 정보를 검색하는 데 필요합니다( OpenProcessToken 참조).
+         * ref : https://learn.microsoft.com/ko-kr/windows/win32/procthread/process-security-and-access-rights
+         */
+        val PROCESS_QUERY_INFORMATION: Long =  0x0400
     }
+
+
 
     fun CreateToolhelp32Snapshot(dwFlags: DWORD, th32ProcessID: DWORD): HANDLE
     fun Process32First(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
@@ -40,8 +56,10 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
     // 현재 시간을 구해오는 함수
     fun GetSystemTime(result: SYSTEMTIME)
 
-
-    // 특정 프로세스에
+    // 특정 프로세스의 핸들을 얻어옴.
+    // https://learn.microsoft.com/ko-kr/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess
+    // 함수가 실패하면 반환 값은 NULL입니다. 확장 오류 정보를 가져오려면 GetLastError를 호출합니다.
+    fun OpenProcess(dwDesiredAccess: DWORD, bInheritHandle: BOOL, dwProcessId: DWORD): HANDLE
 
 
 }
