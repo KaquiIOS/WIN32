@@ -23,7 +23,7 @@ interface IROSUser32: StdCallLibrary, WinUser, WinNT {
     }
 
     // 프로세스에 Event Message 전송
-    fun SendMessage(hWnd: HWND?, msg: Int, wParam: WPARAM?, lParam: LPARAM?): LRESULT
+    fun SendMessage(hWnd: HWND, msg: Int, wParam: WPARAM, lParam: LPARAM): LRESULT
 
     // 자식 창을 찾는 함수
     fun FindWindowEx(parent: HWND?, child: HWND?, className: String?, window: String?): HWND?
