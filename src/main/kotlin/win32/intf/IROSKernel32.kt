@@ -47,8 +47,6 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
         val PROCESS_QUERY_INFORMATION: Long =  0x0400
     }
 
-
-
     fun CreateToolhelp32Snapshot(dwFlags: DWORD, th32ProcessID: DWORD): HANDLE
     fun Process32First(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
     fun Process32Next(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
@@ -61,5 +59,8 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
     // 함수가 실패하면 반환 값은 NULL입니다. 확장 오류 정보를 가져오려면 GetLastError를 호출합니다.
     fun OpenProcess(dwDesiredAccess: DWORD, bInheritHandle: BOOL, dwProcessId: DWORD): HANDLE
 
+    // 핸들 닫기
+    // https://learn.microsoft.com/ko-kr/windows/win32/api/handleapi/nf-handleapi-closehandle
+    fun CloseHandle(hObject: HANDLE): BOOL
 
 }
