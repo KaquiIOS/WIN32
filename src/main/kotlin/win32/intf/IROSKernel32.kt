@@ -17,11 +17,11 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
 
     companion object {
         // kernel32 접근 인스턴스
-        val INSTANCE: Kernel32 = Native.load("kernel32", Kernel32::class.java, W32APIOptions.DEFAULT_OPTIONS) as Kernel32
+        val INSTANCE: IROSKernel32 = Native.load("kernel32", IROSKernel32::class.java, W32APIOptions.DEFAULT_OPTIONS) as IROSKernel32
 
         // Optional: wraps every call to the native library in a synchronized block, limiting native calls to one at a time
         // 선택 사항: 네이티브 라이브러리에 대한 모든 호출을 동기화된 블록으로 전달하여 네이티브 호출을 한 번에 하나로 제한합니다
-        val SYNC_INSTANCE: Kernel32 = Native.synchronizedLibrary(INSTANCE) as Kernel32
+        val SYNC_INSTANCE: IROSKernel32 = Native.synchronizedLibrary(INSTANCE) as IROSKernel32
 
 
         /**
@@ -51,16 +51,9 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
     fun Process32First(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
     fun Process32Next(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
 
-    // 현재 시간을 구해오는 함수
-    fun GetSystemTime(result: SYSTEMTIME)
-
-    // 특정 프로세스의 핸들을 얻어옴.
-    // https://learn.microsoft.com/ko-kr/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess
-    // 함수가 실패하면 반환 값은 NULL입니다. 확장 오류 정보를 가져오려면 GetLastError를 호출합니다.
+    // 특정 프로세스의 핸들을 얻어옴. 함수가 실패하면 반환 값은 NULL입니다. 확장 오류 정보를 가져오려면 GetLastError를 호출합니다.
     fun OpenProcess(dwDesiredAccess: DWORD, bInheritHandle: BOOL, dwProcessId: DWORD): HANDLE
 
     // 핸들 닫기
-    // https://learn.microsoft.com/ko-kr/windows/win32/api/handleapi/nf-handleapi-closehandle
     fun CloseHandle(hObject: HANDLE): BOOL
-
 }

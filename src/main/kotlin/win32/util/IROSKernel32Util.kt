@@ -7,8 +7,6 @@ import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinNT.HANDLE
 import org.example.win32.data.ProcessInfo
 import org.example.win32.intf.IROSKernel32
-import org.example.win32.intf.IROSUser32
-
 
 
 class IROSKernel32Util {
@@ -19,26 +17,26 @@ class IROSKernel32Util {
 
             val processLst: MutableList<ProcessInfo> = mutableListOf()
 
-            val lib = IROSKernel32.INSTANCE
+            val kernel32: IROSKernel32 = IROSKernel32.INSTANCE
 
-            val snapshot: HANDLE = lib.CreateToolhelp32Snapshot(
+            val snapshot: HANDLE = kernel32.CreateToolhelp32Snapshot(
                 DWORD(IROSKernel32.TH32CS_SNAPPROCESS),
                 DWORD(0)
             )
 
             val processEntry = Tlhelp32.PROCESSENTRY32.ByReference()
 
-            if (lib.Process32First(snapshot, processEntry)) {
+            if (kernel32.Process32First(snapshot, processEntry)) {
                 do {
                     processLst.add(ProcessInfo(
                         processEntry.th32ProcessID.toInt(),
                         processEntry.th32ParentProcessID.toInt(),
                         String(processEntry.szExeFile).trimEnd('\u0000'))
                     )
-                } while (lib.Process32Next(snapshot, processEntry))
+                } while (kernel32.Process32Next(snapshot, processEntry))
             }
             String(processEntry.szExeFile).trimEnd('\u0000')
-            lib.CloseHandle(snapshot)
+            kernel32.CloseHandle(snapshot)
 
             return processLst
         }
@@ -47,6 +45,6 @@ class IROSKernel32Util {
 
         // dwDesiredAccess : access option
         fun getProcessHandle(dwDesiredAccess: Int, bInheritHandle: Boolean, pid: Int): HANDLE =
-            IROSKernel32.INSTANCE.OpenProcess(dwDesiredAccess, bInheritHandle, pid)
+            IROSKernel32.INSTANCE.OpenProcess(DWORD(dwDesiredAccess.toLong()), BOOL(bInheritHandle), DWORD(pid.toLong()))
     }
 }

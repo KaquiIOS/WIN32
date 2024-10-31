@@ -6,6 +6,7 @@ import com.sun.jna.platform.win32.WinDef
 import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinDef.WPARAM
 import com.sun.jna.platform.win32.WinDef.LPARAM
+import com.sun.jna.platform.win32.WinDef.RECT
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
 import org.example.win32.data.WindowHandleInfo
@@ -18,7 +19,7 @@ class IROSUser32Util {
 
         fun FindWindowExByClassName(parent: HWND?, className: String?): MutableList<WindowHandleInfo> {
 
-            val user32: User32 = IROSUser32.INSTANCE
+            val user32: IROSUser32 = IROSUser32.INSTANCE
 
             val childWindowHandleInfoLst: MutableList<WindowHandleInfo> = mutableListOf()
 
@@ -61,7 +62,7 @@ class IROSUser32Util {
 
             IROSUser32.INSTANCE.EnumWindows(WNDENUMPROC { hwnd, _ ->
 
-                val user32: User32 = IROSUser32.INSTANCE
+                val user32: IROSUser32 = IROSUser32.INSTANCE
 
                 if (user32.IsWindowVisible(hwnd)) {
 
@@ -101,12 +102,22 @@ class IROSUser32Util {
          *             lParam의 상위 단어는 이 이벤트를 트리거한 마우스 창 메시지(예: WM_MOUSEMOVE)를 지정합니다. 창이 메뉴 모드로 전환되면 이 값은 0입니다.
          *  - LRESULT : 애플리케이션이 이 메시지를 처리하는 경우 추가 처리를 중지하려면 TRUE를 반환하고 계속하려면 FALSE를 반환해야 합니다.
          */
-        fun SendMessage(hWnd: HWND, msg: Int, wParam: WPARAM, lParam: LPARAM) {
+        fun SendMessage(hWnd: HWND, wParam: WPARAM?, lParam: LPARAM?) {
 
-            val user32: User32 = IROSUser32.INSTANCE
+            val user32: IROSUser32 = IROSUser32.INSTANCE
+
+            val hWndPos: RECT = RECT()
+
+            user32.GetWindowRect(hWnd, hWndPos)
+
+            println(hWndPos)
+
+
+            //  SendMessage 0x0020
+            val SEND_MESSAGE: Int = 0x0020
 
             // Message 별로 파라미터가 다 다르다.
-
+ 
 
 
         }
