@@ -53,6 +53,7 @@ interface IROSUser32: StdCallLibrary, WinUser, WinNT {
     // 윈도우 핸들의 위치 조회
     fun GetWindowRect(hWnd: HWND, rect: RECT): Boolean
 
+
     // 컨트롤과 연결된 제목 또는 텍스트를 검색
     fun GetDlgItemTextA(hDlg: HWND, nIDDlgItem: Int, lpString: CharArray?, cchMax: Int)
 }

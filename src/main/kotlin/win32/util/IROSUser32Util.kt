@@ -1,14 +1,13 @@
 package org.example.win32.util
 
 import com.sun.jna.Native
+import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.WinDef
-import com.sun.jna.platform.win32.WinDef.HWND
-import com.sun.jna.platform.win32.WinDef.WPARAM
-import com.sun.jna.platform.win32.WinDef.LPARAM
-import com.sun.jna.platform.win32.WinDef.RECT
+import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
+import org.example.win32.data.ProcessInfo
 import org.example.win32.data.WindowHandleInfo
 import org.example.win32.intf.IROSUser32
 
@@ -17,7 +16,7 @@ class IROSUser32Util {
 
     companion object {
 
-        fun FindWindowExByClassName(parent: HWND?, className: String?): MutableList<WindowHandleInfo> {
+        fun findWindowExByClassName(parent: HWND?, className: String?): List<WindowHandleInfo> {
 
             val user32: IROSUser32 = IROSUser32.INSTANCE
 
@@ -67,9 +66,9 @@ class IROSUser32Util {
                 if (user32.IsWindowVisible(hwnd)) {
 
                     // 각 윈도우 핸들의 Text 를 수집
-                    val windowText: CharArray = CharArray(512)
-                    user32.GetWindowText(hwnd, windowText, 512)
-                    val windowTextString: String = Native.toString(windowText)
+                    val text: CharArray = CharArray(512)
+                    user32.GetWindowText(hwnd, text, 512)
+                    val windowTextString: String = Native.toString(text)
 
                     // 빈 텍스트면 취소
                     if (windowTextString.isEmpty()) {
@@ -77,9 +76,8 @@ class IROSUser32Util {
                     }
 
                     // 각 윈도우 핸들의 클래스 이름
-                    val className: CharArray = CharArray(512)
-                    user32.GetClassName(hwnd, className, 512)
-                    val classNameString: String = Native.toString(className)
+                    user32.GetClassName(hwnd, text, 512)
+                    val classNameString: String = Native.toString(text)
 
                     // 각 윈도우 핸들의 PID
                     val pid = IntByReference(0)
@@ -96,32 +94,75 @@ class IROSUser32Util {
         }
 
         /**
-         * 허용 이벤트 : WM_SETCURSOR
-         *  - wParam : 커서가 포함된 창에 대한 핸들입니다.
-         *  - lParam : lParam의 하위 단어는 커서 위치에 대한 적중 테스트 결과를 지정합니다. 가능한 값은 WM_NCHITTEST 반환 값을 참조하세요.
-         *             lParam의 상위 단어는 이 이벤트를 트리거한 마우스 창 메시지(예: WM_MOUSEMOVE)를 지정합니다. 창이 메뉴 모드로 전환되면 이 값은 0입니다.
-         *  - LRESULT : 애플리케이션이 이 메시지를 처리하는 경우 추가 처리를 중지하려면 TRUE를 반환하고 계속하려면 FALSE를 반환해야 합니다.
+         * 선택된 등기를 PDF 로 출력하기 위해, 다이얼로그를 PDF 로 설정한다.
+         * Microsoft Print to PDF
          */
-        fun SendMessage(hWnd: HWND, wParam: WPARAM?, lParam: LPARAM?) {
+        fun setPrintToToPDF(parentHwnd: HWND, comboBoxHwnd: HWND, targetPrintName: String = "Microsoft Print to PDF") : Boolean {
+
+            // PDF 설정을 위한 이벤트들
+            val CB_GETLBTEXT = 0x0148
+            val CB_GETLBTEXTLEN = 0x0149
+            val CB_SETCURSEL = 0x014e
 
             val user32: IROSUser32 = IROSUser32.INSTANCE
 
-            val hWndPos: RECT = RECT()
+            // CB_GETCOUNT : DropBox 의 행이 몇 줄인지 확인
+            val comboBoxItemCnt: Int = user32.SendMessage(comboBoxHwnd, 0x0146, WPARAM(0), LPARAM(0)).toInt()
 
-            user32.GetWindowRect(hWnd, hWndPos)
+            // 컨트롤 ID를 얻어, 드롭 박스의 Item 을 확인한다
+            val controlHwnd: HWND = IROSUser32.INSTANCE.GetDlgItem(parentHwnd, user32.GetDlgCtrlID(comboBoxHwnd))
 
-            println(hWndPos)
+            for(rowIdx in 0..<comboBoxItemCnt) {
 
+                // Pointer 설정을 위한 메모리 사이즈 설정
+                // CB_GETLBTEXTLEN 로 각 row 의 Text 가 몇 byte 인지 확인 필요 + 1(\u0000)
+                val len : Long = user32.SendMessage(controlHwnd, CB_GETLBTEXTLEN, WPARAM(rowIdx.toLong()), LPARAM()).toLong() * Native.WCHAR_SIZE + 1
 
-            //  SendMessage 0x0020
-            val SEND_MESSAGE: Int = 0x0020
+                // 문자열의 길이가 0 이상인 경우만 처리
+                if (len > 0) {
+                    // 직접 pointerAddress 를 설정
+                    val pointerAddress: Long = Native.malloc(len)
 
-            // Message 별로 파라미터가 다 다르다.
- 
+                    // CB_GETLBTEXT 로 텍스트를 pointerAddress 에 입력한다.
+                    // 결과로 몇 글자의 Text 를 가지고 있는지 나타냄
+                    val resultLen: LRESULT =
+                        user32.SendMessage(controlHwnd, CB_GETLBTEXT, WPARAM(rowIdx.toLong()), LPARAM(pointerAddress))
 
+                    val itemStr = String(Pointer(pointerAddress).getCharArray(0, resultLen.toInt()))
 
+                    // 변경하고 싶은 Print 이름이 나온 경우
+                    // CB_SETCURSEL 로 특정 행을 Select 한다.
+                    if (itemStr == targetPrintName) {
+                        user32.SendMessage(controlHwnd, CB_SETCURSEL, WPARAM(rowIdx.toLong()), LPARAM(0))
+                        return true
+                    }
+
+                    // free malloc memory preventing memory leak
+                    Native.free(pointerAddress)
+                }
+            }
+
+            return false
         }
 
+        fun findTargetHwndByClassName(processLst: List<ProcessInfo>, targetProcessName: String, targetClassName: String): Pair<WindowHandleInfo, List<WindowHandleInfo>>? {
 
+            val targetProcess = processLst.firstOrNull { it.processName == targetProcessName }
+
+            // check target process which has target Process Name
+            if (targetProcess == null)
+                return null
+
+            // Find Window Handle Info by pid
+            val allWindowsHwnd : List<WindowHandleInfo> = getAllWindows()
+
+            val irosViewerParentHwnd = allWindowsHwnd.firstOrNull { it.pid == targetProcess.pid }
+
+            if (irosViewerParentHwnd == null)
+                return null
+
+            // find child Window Handle Info by ClassName
+            return Pair<WindowHandleInfo, List<WindowHandleInfo>>(irosViewerParentHwnd, findWindowExByClassName(irosViewerParentHwnd.hwnd, targetClassName))
+        }
     }
 }
