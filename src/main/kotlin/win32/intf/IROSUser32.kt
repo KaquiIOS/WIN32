@@ -10,13 +10,18 @@ import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
+import org.example.win32.const.Win32Const.Companion.USER32
 
 
 interface IROSUser32: StdCallLibrary, WinUser, WinNT {
 
     companion object {
         // kernel32 접근 인스턴스
-        val INSTANCE: IROSUser32 = Native.load("user32", IROSUser32::class.java, W32APIOptions.DEFAULT_OPTIONS) as IROSUser32
+        val INSTANCE: IROSUser32 = Native.load(
+            USER32,
+            IROSUser32::class.java,
+            W32APIOptions.DEFAULT_OPTIONS
+        ) as IROSUser32
 
         // Optional: wraps every call to the native library in a synchronized block, limiting native calls to one at a time
         // 선택 사항: 네이티브 라이브러리에 대한 모든 호출을 동기화된 블록으로 전달하여 네이티브 호출을 한 번에 하나로 제한합니다

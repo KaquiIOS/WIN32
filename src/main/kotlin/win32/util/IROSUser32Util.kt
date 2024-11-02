@@ -7,6 +7,7 @@ import com.sun.jna.platform.win32.WinDef
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
+import org.example.win32.const.Win32Const
 import org.example.win32.data.ProcessInfo
 import org.example.win32.data.WindowHandleInfo
 import org.example.win32.intf.IROSUser32
@@ -99,15 +100,10 @@ class IROSUser32Util {
          */
         fun setPrintToToPDF(parentHwnd: HWND, comboBoxHwnd: HWND, targetPrintName: String = "Microsoft Print to PDF") : Boolean {
 
-            // PDF 설정을 위한 이벤트들
-            val CB_GETLBTEXT = 0x0148
-            val CB_GETLBTEXTLEN = 0x0149
-            val CB_SETCURSEL = 0x014e
-
             val user32: IROSUser32 = IROSUser32.INSTANCE
 
             // CB_GETCOUNT : DropBox 의 행이 몇 줄인지 확인
-            val comboBoxItemCnt: Int = user32.SendMessage(comboBoxHwnd, 0x0146, WPARAM(0), LPARAM(0)).toInt()
+            val comboBoxItemCnt: Int = user32.SendMessage(comboBoxHwnd, Win32Const.CB_GETCOUNT, WPARAM(0), LPARAM(0)).toInt()
 
             // 컨트롤 ID를 얻어, 드롭 박스의 Item 을 확인한다
             val controlHwnd: HWND = IROSUser32.INSTANCE.GetDlgItem(parentHwnd, user32.GetDlgCtrlID(comboBoxHwnd))
@@ -116,7 +112,7 @@ class IROSUser32Util {
 
                 // Pointer 설정을 위한 메모리 사이즈 설정
                 // CB_GETLBTEXTLEN 로 각 row 의 Text 가 몇 byte 인지 확인 필요 + 1(\u0000)
-                val len : Long = user32.SendMessage(controlHwnd, CB_GETLBTEXTLEN, WPARAM(rowIdx.toLong()), LPARAM()).toLong() * Native.WCHAR_SIZE + 1
+                val len : Long = user32.SendMessage(controlHwnd, Win32Const.CB_GETLBTEXTLEN, WPARAM(rowIdx.toLong()), LPARAM()).toLong() * Native.WCHAR_SIZE + 1
 
                 // 문자열의 길이가 0 이상인 경우만 처리
                 if (len > 0) {
@@ -126,14 +122,14 @@ class IROSUser32Util {
                     // CB_GETLBTEXT 로 텍스트를 pointerAddress 에 입력한다.
                     // 결과로 몇 글자의 Text 를 가지고 있는지 나타냄
                     val resultLen: LRESULT =
-                        user32.SendMessage(controlHwnd, CB_GETLBTEXT, WPARAM(rowIdx.toLong()), LPARAM(pointerAddress))
+                        user32.SendMessage(controlHwnd, Win32Const.CB_GETLBTEXT, WPARAM(rowIdx.toLong()), LPARAM(pointerAddress))
 
                     val itemStr = String(Pointer(pointerAddress).getCharArray(0, resultLen.toInt()))
 
                     // 변경하고 싶은 Print 이름이 나온 경우
                     // CB_SETCURSEL 로 특정 행을 Select 한다.
                     if (itemStr == targetPrintName) {
-                        user32.SendMessage(controlHwnd, CB_SETCURSEL, WPARAM(rowIdx.toLong()), LPARAM(0))
+                        user32.SendMessage(controlHwnd, Win32Const.CB_SETCURSEL, WPARAM(rowIdx.toLong()), LPARAM(0))
                         return true
                     }
 

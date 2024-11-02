@@ -1,15 +1,9 @@
 package org.example
 
-import com.sun.jna.Memory
-import com.sun.jna.Native
-import com.sun.jna.Pointer
-import com.sun.jna.PointerType
-import com.sun.jna.platform.win32.WinDef
-import com.sun.jna.platform.win32.WinDef.HWND
-import com.sun.jna.platform.win32.WinDef.LRESULT
+import org.example.win32.const.CommonConst.Companion.BUTTON
+import org.example.win32.const.CommonConst.Companion.COMBO_BOX
+import org.example.win32.const.CommonConst.Companion.IROS_PROCESS_NAME
 import org.example.win32.data.ProcessInfo
-import org.example.win32.data.WindowHandleInfo
-import org.example.win32.intf.IROSUser32
 import org.example.win32.util.IROSKernel32Util
 import org.example.win32.util.IROSUser32Util
 
@@ -21,7 +15,7 @@ fun main() {
 
     // process 와 찾을 컨트롤 클래스 이름
     val targetHwndMap: Map<String, String> = mutableMapOf(
-        "iprtcrsIgmprintxctrl.xgd" to "ComboBox"
+        IROS_PROCESS_NAME to COMBO_BOX
     )
 
     // targetProcess 를 순회하면서
@@ -34,8 +28,8 @@ fun main() {
         val targetChildHwndOfClassName = targetHwndFamily.second
 
         when(className) {
-            "ComboBox" -> targetChildHwndOfClassName.forEach { IROSUser32Util.setPrintToToPDF(targetParentHwnd.hwnd, it.hwnd) }
-            "Button" -> TODO()
+            COMBO_BOX -> targetChildHwndOfClassName.forEach { IROSUser32Util.setPrintToToPDF(targetParentHwnd.hwnd, it.hwnd) }
+            BUTTON -> TODO()
         }
     }
 }

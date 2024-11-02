@@ -5,6 +5,8 @@ import com.sun.jna.platform.win32.WinDef.DWORD
 import com.sun.jna.platform.win32.WinDef.BOOL
 import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinNT.HANDLE
+import org.example.win32.const.Win32Const
+import org.example.win32.const.Win32Const.Companion.TH32CS_SNAPPROCESS
 import org.example.win32.data.ProcessInfo
 import org.example.win32.intf.IROSKernel32
 
@@ -20,7 +22,7 @@ class IROSKernel32Util {
             val kernel32: IROSKernel32 = IROSKernel32.INSTANCE
 
             val snapshot: HANDLE = kernel32.CreateToolhelp32Snapshot(
-                DWORD(IROSKernel32.TH32CS_SNAPPROCESS),
+                DWORD(TH32CS_SNAPPROCESS),
                 DWORD(0)
             )
 
