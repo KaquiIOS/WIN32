@@ -63,7 +63,8 @@ fun main() {
 
 fun saveFile(fileName: String, parentHwnd: HWND) {
 
-
+// https://stackoverflow.com/questions/6298907/how-to-get-hwnd-of-the-currently-active-windows-explorer-window
+//  GetForegroundWindow().
 
 
 
