@@ -1,5 +1,6 @@
 package org.example
 
+import com.sun.jna.platform.win32.WinDef.HWND
 import org.example.win32.const.CommonConst.Companion.BUTTON
 import org.example.win32.const.CommonConst.Companion.COMBO_BOX
 import org.example.win32.const.CommonConst.Companion.IROS_PROCESS_NAME
@@ -42,6 +43,7 @@ fun main() {
                             if(!IROSUser32Util.sendButtonDownMessage(it.hwnd, true)) {
                                 println("LButton Down Fail")
                             } else {
+                                saveFile(fileName, targetParentHwnd.hwnd)
                                 // 프린트 성공하면, 저장을 위한 윈도우 탐색기를 확인해야함.
                                 // 윈도우 탐색기 확인 시, Title 을 저장하는 Combo Box 찾기
                                 // Combo Box 를 찾으면, Title 을 설정해줌 (yyyyMMdd_등기구분_기업명.pdf)
@@ -56,4 +58,13 @@ fun main() {
 
         }
     }
+}
+
+
+fun saveFile(fileName: String, parentHwnd: HWND) {
+
+
+
+
+
 }
