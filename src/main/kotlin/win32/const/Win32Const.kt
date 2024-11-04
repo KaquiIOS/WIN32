@@ -52,6 +52,10 @@ class Win32Const {
         const val MK_XBUTTON2 = 0x0040
         // ******************************
 
+        // 파일탐색기 클래스 (win10)
+        // const val EXPLORER_CLASS = "CabinetWClass"
+        const val EXPLORER_CLASS = "Microsoft.UI.Content.DesktopChildSiteBridge" // win11
+
         /**
          * Takes a snapshot of the specified processes, as well as the heaps, modules, and threads used by these processes.
          * Includes all processes in the system in the snapshot. To enumerate the processes, see Process32First.

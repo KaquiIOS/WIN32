@@ -19,7 +19,6 @@ class CommonConst {
         // Print OK Button
         val PRINT_OK: String = "확인"
 
+        val EXPLORER_PROCESS_NAME: String = "iprtcrsIgmprintxctrl.xgd"
     }
-
-
 }

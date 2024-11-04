@@ -64,9 +64,9 @@ class IROSUser32Util {
 
             val windowHwndLst: MutableList<WindowHandleInfo> = mutableListOf()
 
-            IROSUser32.INSTANCE.EnumWindows(WNDENUMPROC { hwnd, _ ->
+            val user32: IROSUser32 = IROSUser32.INSTANCE
 
-                val user32: IROSUser32 = IROSUser32.INSTANCE
+            user32.EnumWindows(WNDENUMPROC { hwnd, _ ->
 
                 if (user32.IsWindowVisible(hwnd)) {
 
@@ -91,7 +91,7 @@ class IROSUser32Util {
                     windowHwndLst.add(WindowHandleInfo(windowTextString, classNameString, pid.value, hwnd))
                 }
 
-                return@WNDENUMPROC true
+                true
 
             }, null)
 
@@ -149,7 +149,11 @@ class IROSUser32Util {
 
         fun getWindowRect(hWnd : HWND, lpRect : RECT): Boolean = IROSUser32.INSTANCE.GetWindowRect(hWnd, lpRect)
 
+        fun findWindowEx(parent: HWND?, child: HWND?, className: String?, window: String?): HWND? = IROSUser32.INSTANCE.FindWindowEx(parent, child, className, window)
+
         fun getClientRect(hWnd: HWND, lpRect: RECT): Boolean = IROSUser32.INSTANCE.GetClientRect(hWnd, lpRect)
+
+        fun getForegroundWindow(): HWND? = IROSUser32.INSTANCE.GetForegroundWindow()
 
         fun sendButtonDownMessage(hwnd: HWND, isLeft: Boolean): Boolean {
 
@@ -201,6 +205,42 @@ class IROSUser32Util {
                 return null
 
             return parentHwnd
+        }
+
+        fun findTargetHwndRecursivelyByClassName(parentHwnd: HWND, targetClassName: String): WindowHandleInfo? {
+
+            val user32: IROSUser32 = IROSUser32.INSTANCE
+
+            var targetHwnd = IROSUser32.INSTANCE.FindWindowEx(parentHwnd, null, null, null)
+
+            while(true) {
+
+                if (targetHwnd == null) return null
+
+                // 각 윈도우 핸들의 클래스 이름
+                val text: CharArray = CharArray(512)
+                user32.GetClassName(targetHwnd, text, 512)
+
+                if (Native.toString(text) == targetClassName) {
+
+                    user32.GetWindowText(targetHwnd, text, 512)
+                    val windowTextString: String = Native.toString(text)
+
+                    // 각 윈도우 핸들의 PID
+                    val pid = IntByReference(0)
+                    user32.GetWindowThreadProcessId(targetHwnd, pid)
+
+                    return WindowHandleInfo(windowTextString, targetClassName, pid.value, targetHwnd)
+                }
+
+                val nestedChildHwnd = findTargetHwndRecursivelyByClassName(targetHwnd, targetClassName)
+
+                if (nestedChildHwnd != null) {
+                    return nestedChildHwnd
+                }
+
+                targetHwnd = IROSUser32.INSTANCE.FindWindowEx(parentHwnd, targetHwnd, null, null)
+            }
         }
     }
 }

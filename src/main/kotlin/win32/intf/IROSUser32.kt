@@ -61,6 +61,9 @@ interface IROSUser32: StdCallLibrary, WinUser, WinNT {
     // 윈도우 클라이이언트 핸들의 위치 조회
     fun GetClientRect(hWnd: HWND, rect: RECT): Boolean
 
+    // 최상위에 있는 Window 가져오기
+    fun GetForegroundWindow(): HWND?
+
     // 컨트롤과 연결된 제목 또는 텍스트를 검색
     fun GetDlgItemTextA(hDlg: HWND, nIDDlgItem: Int, lpString: CharArray?, cchMax: Int)
 }
