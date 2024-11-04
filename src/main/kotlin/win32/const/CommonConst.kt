@@ -15,6 +15,9 @@ class CommonConst {
 
         // UI BUTTON Text
         val BUTTON: String = "Button"
+        
+        // Print OK Button
+        val PRINT_OK: String = "확인"
 
     }
 

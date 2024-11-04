@@ -2,12 +2,16 @@ package org.example.win32.util
 
 import com.sun.jna.Native
 import com.sun.jna.Pointer
-import com.sun.jna.platform.win32.User32
-import com.sun.jna.platform.win32.WinDef
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
 import org.example.win32.const.Win32Const
+import org.example.win32.const.Win32Const.Companion.MK_LBUTTON
+import org.example.win32.const.Win32Const.Companion.MK_RBUTTON
+import org.example.win32.const.Win32Const.Companion.WM_LBUTTONDOWN
+import org.example.win32.const.Win32Const.Companion.WM_LBUTTONUP
+import org.example.win32.const.Win32Const.Companion.WM_RBUTTONDOWN
+import org.example.win32.const.Win32Const.Companion.WM_RBUTTONUP
 import org.example.win32.data.ProcessInfo
 import org.example.win32.data.WindowHandleInfo
 import org.example.win32.intf.IROSUser32
@@ -141,7 +145,48 @@ class IROSUser32Util {
             return false
         }
 
-        fun findTargetHwndByClassName(processLst: List<ProcessInfo>, targetProcessName: String, targetClassName: String): Pair<WindowHandleInfo, List<WindowHandleInfo>>? {
+        fun sendMessage(hWnd: HWND, msg: Int, wParam: WPARAM, lParam: LPARAM) = IROSUser32.INSTANCE.SendMessage(hWnd, msg, wParam, lParam)
+
+        fun getWindowRect(hWnd : HWND, lpRect : RECT): Boolean = IROSUser32.INSTANCE.GetWindowRect(hWnd, lpRect)
+
+        fun getClientRect(hWnd: HWND, lpRect: RECT): Boolean = IROSUser32.INSTANCE.GetClientRect(hWnd, lpRect)
+
+        fun sendButtonDownMessage(hwnd: HWND, isLeft: Boolean): Boolean {
+
+            // drawRect 로 현재 hWnd 의 위치를 알아냄
+            val controlPos: RECT = RECT()
+
+            if (getClientRect(hwnd, controlPos)) {
+                // 어느 버튼인지 설정
+                val btnClickCommands = when(isLeft) {
+                    true  -> Pair(WM_LBUTTONDOWN, WM_LBUTTONUP)
+                    false -> Pair(WM_RBUTTONDOWN, WM_RBUTTONUP)
+                }
+
+                // 버튼 클릭 옵션
+                val buttonDownOption = when(isLeft) {
+                    true  -> MK_LBUTTON
+                    false -> MK_RBUTTON
+                }
+
+                val buttonDownPos: LPARAM = LPARAM((controlPos.left shl 16 or controlPos.top).toLong())
+
+                // 좌 버튼 클릭
+                var sendMessageResult = sendMessage(hwnd, btnClickCommands.first, WPARAM(buttonDownOption.toLong()), buttonDownPos)
+
+                // 좌 버튼 업
+                if (sendMessageResult.toLong() == 0L) {
+                    sendMessageResult = sendMessage(hwnd, btnClickCommands.second, WPARAM(buttonDownOption.toLong()), buttonDownPos)
+
+                    // 좌 버튼 다운, 업 정상적일 때
+                    return (sendMessageResult.toInt() == 0)
+                }
+            }
+
+            return false
+        }
+
+        fun findTargetHwndByProcessName(processLst: List<ProcessInfo>, targetProcessName: String): WindowHandleInfo? {
 
             val targetProcess = processLst.firstOrNull { it.processName == targetProcessName }
 
@@ -150,15 +195,12 @@ class IROSUser32Util {
                 return null
 
             // Find Window Handle Info by pid
-            val allWindowsHwnd : List<WindowHandleInfo> = getAllWindows()
+            val parentHwnd = getAllWindows().firstOrNull { it.pid == targetProcess.pid }
 
-            val irosViewerParentHwnd = allWindowsHwnd.firstOrNull { it.pid == targetProcess.pid }
-
-            if (irosViewerParentHwnd == null)
+            if (parentHwnd == null)
                 return null
 
-            // find child Window Handle Info by ClassName
-            return Pair<WindowHandleInfo, List<WindowHandleInfo>>(irosViewerParentHwnd, findWindowExByClassName(irosViewerParentHwnd.hwnd, targetClassName))
+            return parentHwnd
         }
     }
 }
