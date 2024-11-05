@@ -58,7 +58,11 @@ class Win32Const {
         // REDRAW
         const val WM_SETREDRAW = 0x000b
 
+        // enter
+        const val VK_RETURN	= 0x0D
 
+        const val WM_KEYDOWN = 0x0100
+        const val WM_KEYUP = 0x0101
 
         // 파일탐색기 클래스 (win10)
         // const val EXPLORER_CLASS = "CabinetWClass"

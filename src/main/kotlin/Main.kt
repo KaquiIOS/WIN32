@@ -14,6 +14,9 @@ import org.example.win32.const.CommonConst.Companion.PRT_DIAG_PATH_EDIT_WRAPPER_
 import org.example.win32.const.CommonConst.Companion.PRT_DIAG_PATH_PARENT_CLASS
 import org.example.win32.const.CommonConst.Companion.PRT_DIAG_UI_VIEW_CLASS
 import org.example.win32.const.Win32Const
+import org.example.win32.const.Win32Const.Companion.VK_RETURN
+import org.example.win32.const.Win32Const.Companion.WM_KEYDOWN
+import org.example.win32.const.Win32Const.Companion.WM_KEYUP
 import org.example.win32.data.ProcessInfo
 import org.example.win32.ext.join
 import org.example.win32.util.IROSKernel32Util
@@ -69,9 +72,10 @@ fun main() {
         requireNotNull(pathTextWinHwndInfo)
 
         val result = IROSUser32Util.setEditText(pathTextWinHwndInfo, "주소: $filePath")
-        IROSUser32Util.sendMessage(pathTextWinHwndInfo, Win32Const.WM_SETREDRAW, WinDef.WPARAM(0), WinDef.LPARAM(0))
-
-        // RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN
+        //IROSUser32Util.sendMessage(pathTextWinHwndInfo, Win32Const.WM_SETREDRAW, WinDef.WPARAM(0), WinDef.LPARAM(0))
+        // 엔터 입력
+        IROSUser32Util.sendMessage(pathTextWinHwndInfo, WM_KEYDOWN, WinDef.WPARAM(VK_RETURN.toLong()), WinDef.LPARAM(0))
+        IROSUser32Util.sendMessage(pathTextWinHwndInfo, WM_KEYUP, WinDef.WPARAM(VK_RETURN.toLong()), WinDef.LPARAM(0))
 
         // Find Save Button
         val saveBtn = IROSUser32Util.findWindowExByClassName(printHwnd.hwnd, BUTTON).filter { it.titleName.contains(PRINT_SAVE) }
