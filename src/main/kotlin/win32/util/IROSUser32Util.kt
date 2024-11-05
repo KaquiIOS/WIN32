@@ -1,7 +1,10 @@
 package org.example.win32.util
 
+import com.sun.jna.Memory
 import com.sun.jna.Native
+import com.sun.jna.NativeLong
 import com.sun.jna.Pointer
+import com.sun.jna.WString
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
@@ -12,6 +15,7 @@ import org.example.win32.const.Win32Const.Companion.WM_LBUTTONDOWN
 import org.example.win32.const.Win32Const.Companion.WM_LBUTTONUP
 import org.example.win32.const.Win32Const.Companion.WM_RBUTTONDOWN
 import org.example.win32.const.Win32Const.Companion.WM_RBUTTONUP
+import org.example.win32.const.Win32Const.Companion.WM_SETTEXT
 import org.example.win32.data.ProcessInfo
 import org.example.win32.data.WindowHandleInfo
 import org.example.win32.intf.IROSUser32
@@ -242,5 +246,8 @@ class IROSUser32Util {
                 targetHwnd = IROSUser32.INSTANCE.FindWindowEx(parentHwnd, targetHwnd, null, null)
             }
         }
+
+        fun setEditText(editHwnd: HWND, text: String): Boolean =
+            IROSUser32.INSTANCE.SendMessage(editHwnd, WM_SETTEXT, WPARAM(0), WString(text)).toInt() != 0
     }
 }

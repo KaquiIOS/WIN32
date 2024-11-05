@@ -2,7 +2,7 @@ package org.example.win32.intf
 
 import com.sun.jna.Native
 import com.sun.jna.Pointer
-import com.sun.jna.platform.win32.User32
+import com.sun.jna.WString
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinUser
@@ -30,6 +30,9 @@ interface IROSUser32: StdCallLibrary, WinUser, WinNT {
 
     // 프로세스에 Event Message 전송
     fun SendMessage(hWnd: HWND, msg: Int, wParam: WPARAM, lParam: LPARAM): LRESULT
+
+    // 파라미터를 LPARAM 대신 String으로 설정
+    fun SendMessage(hWnd: HWND, msg: Int, wParam: WPARAM, lParam: WString): LRESULT
 
     // 자식 창을 찾는 함수
     fun FindWindowEx(parent: HWND?, child: HWND?, className: String?, window: String?): HWND?

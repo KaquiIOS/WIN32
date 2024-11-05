@@ -21,6 +21,9 @@ class Win32Const {
         // DropBox 선택된 Item Index 획득
         const val CB_SETCURSEL = 0x014e
 
+        // Edit 전체 텍스트 수정
+        const val WM_SETTEXT = 0x000C
+
         // Left button click
         const val WM_LBUTTONDOWN = 0x0201
         const val WM_LBUTTONUP = 0x0202
@@ -51,6 +54,11 @@ class Win32Const {
         // 첫 번째 X 단추가 눌려져 있습니다.
         const val MK_XBUTTON2 = 0x0040
         // ******************************
+
+        // REDRAW
+        const val WM_SETREDRAW = 0x000b
+
+
 
         // 파일탐색기 클래스 (win10)
         // const val EXPLORER_CLASS = "CabinetWClass"

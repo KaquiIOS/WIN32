@@ -19,6 +19,18 @@ class CommonConst {
         // Print OK Button
         val PRINT_OK: String = "확인"
 
+        val PRINT_SAVE: String = "저장"
+
         val EXPLORER_PROCESS_NAME: String = "iprtcrsIgmprintxctrl.xgd"
+
+        val PRT_DIAG_UI_VIEW_CLASS: String = "DUIViewWndClassName"
+
+        val PRT_DIAG_FILE_NAME_CLASS: String = "Edit"
+
+        val PRT_DIAG_PATH_PARENT_CLASS: String = "WorkerW"
+
+        val PRT_DIAG_PATH_EDIT_WRAPPER_CLASS: String = "Breadcrumb Parent"
+
+        val PRT_DIAG_PATH_EDIT_CLASS: String = "ToolbarWindow32"
     }
 }
