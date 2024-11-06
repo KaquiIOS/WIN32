@@ -1,22 +1,32 @@
 package org.example.win32.util
 
-import com.sun.jna.Memory
 import com.sun.jna.Native
-import com.sun.jna.NativeLong
 import com.sun.jna.Pointer
 import com.sun.jna.WString
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinUser.WNDENUMPROC
 import com.sun.jna.ptr.IntByReference
+import com.sun.jna.Memory
+import com.sun.jna.platform.win32.BaseTSD
 import org.example.win32.const.Win32Const
 import org.example.win32.const.Win32Const.Companion.MK_LBUTTON
 import org.example.win32.const.Win32Const.Companion.MK_RBUTTON
+import org.example.win32.const.Win32Const.Companion.TBIF_COMMAND
+import org.example.win32.const.Win32Const.Companion.TBIF_STATE
+import org.example.win32.const.Win32Const.Companion.TBIF_TEXT
+import org.example.win32.const.Win32Const.Companion.TB_BUTTONCOUNT
+import org.example.win32.const.Win32Const.Companion.TB_GETBUTTONINFO
+import org.example.win32.const.Win32Const.Companion.TB_SETBUTTONINFO
+import org.example.win32.const.Win32Const.Companion.VK_RETURN
+import org.example.win32.const.Win32Const.Companion.WM_KEYDOWN
+import org.example.win32.const.Win32Const.Companion.WM_KEYUP
 import org.example.win32.const.Win32Const.Companion.WM_LBUTTONDOWN
 import org.example.win32.const.Win32Const.Companion.WM_LBUTTONUP
 import org.example.win32.const.Win32Const.Companion.WM_RBUTTONDOWN
 import org.example.win32.const.Win32Const.Companion.WM_RBUTTONUP
 import org.example.win32.const.Win32Const.Companion.WM_SETTEXT
 import org.example.win32.data.ProcessInfo
+import org.example.win32.data.TbButtonInfo
 import org.example.win32.data.WindowHandleInfo
 import org.example.win32.intf.IROSUser32
 
@@ -211,6 +221,8 @@ class IROSUser32Util {
             return parentHwnd
         }
 
+        fun getWindowText(hWnd: HWND?, lpString: CharArray?, nMaxCount: Int): Int = IROSUser32.INSTANCE.GetWindowText(hWnd, lpString, nMaxCount)
+
         fun findTargetHwndRecursivelyByClassName(parentHwnd: HWND, targetClassName: String): WindowHandleInfo? {
 
             val user32: IROSUser32 = IROSUser32.INSTANCE
@@ -249,5 +261,29 @@ class IROSUser32Util {
 
         fun setEditText(editHwnd: HWND, text: String): Boolean =
             IROSUser32.INSTANCE.SendMessage(editHwnd, WM_SETTEXT, WPARAM(0), WString(text)).toInt() != 0
+
+        fun sendEnterToHwnd(hwnd: HWND) {
+            IROSUser32.INSTANCE.SendMessage(hwnd, WM_KEYDOWN, WPARAM(VK_RETURN.toLong()), LPARAM(0))
+            IROSUser32.INSTANCE.SendMessage(hwnd, WM_KEYUP, WPARAM(VK_RETURN.toLong()), LPARAM(0))
+        }
+
+        fun getTbButtonCount(toolbarHwnd: HWND): Int = IROSUser32.INSTANCE.SendMessage(toolbarHwnd, TB_BUTTONCOUNT, WPARAM(0L), LPARAM(0L)).toInt()
+
+        fun getTbButtonInfo(toolbarHwnd: HWND, idx: Int): Int {
+
+            val tbButtonInfo: TbButtonInfo = TbButtonInfo()
+            tbButtonInfo.dwMask = (TBIF_TEXT or TBIF_COMMAND or TBIF_STATE)
+            tbButtonInfo.pszText = BaseTSD.DWORD_PTR(Pointer.nativeValue(Memory((tbButtonInfo.cchText * Native.WCHAR_SIZE).toLong()).getPointer(0)))
+            tbButtonInfo.cbSize = tbButtonInfo.size().toLong()
+
+            return IROSUser32.INSTANCE.SendMessage(toolbarHwnd, TB_GETBUTTONINFO, WPARAM(idx.toLong()), LPARAM(Pointer.nativeValue(tbButtonInfo.pointer))).toInt()
+        }
+
+
+        fun setTbButtonInfo(toolbarHwnd: HWND, idx: Int, tbButtonInfo: TbButtonInfo): Int =
+            IROSUser32.INSTANCE.SendMessage(toolbarHwnd, TB_SETBUTTONINFO, WPARAM(idx.toLong()), LPARAM(Pointer.nativeValue(tbButtonInfo.pointer))).toInt()
+
+        fun getParentHwnd(childHwnd: HWND): HWND? = IROSUser32.INSTANCE.GetParent(childHwnd)
+
     }
 }

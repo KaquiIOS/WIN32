@@ -19,6 +19,9 @@ dependencies {
 
     // Seleinum
     implementation("org.seleniumhq.selenium:selenium-java:4.25.0")
+
+    // Coroutine
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 }
 
 tasks.test {

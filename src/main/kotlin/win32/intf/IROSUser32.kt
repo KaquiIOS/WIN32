@@ -67,6 +67,8 @@ interface IROSUser32: StdCallLibrary, WinUser, WinNT {
     // 최상위에 있는 Window 가져오기
     fun GetForegroundWindow(): HWND?
 
+    fun GetParent(childHwnd: HWND): HWND?
+
     // 컨트롤과 연결된 제목 또는 텍스트를 검색
     fun GetDlgItemTextA(hDlg: HWND, nIDDlgItem: Int, lpString: CharArray?, cchMax: Int)
 }

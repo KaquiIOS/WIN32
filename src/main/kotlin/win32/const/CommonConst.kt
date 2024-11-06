@@ -21,6 +21,9 @@ class CommonConst {
 
         val PRINT_SAVE: String = "저장"
 
+        // ComboboxEx32
+        const val COMBO_BOX_EX_32 = "ComboBoxEx32"
+
         val EXPLORER_PROCESS_NAME: String = "iprtcrsIgmprintxctrl.xgd"
 
         val PRT_DIAG_UI_VIEW_CLASS: String = "DUIViewWndClassName"

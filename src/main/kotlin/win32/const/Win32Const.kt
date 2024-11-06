@@ -64,9 +64,19 @@ class Win32Const {
         const val WM_KEYDOWN = 0x0100
         const val WM_KEYUP = 0x0101
 
-        // 파일탐색기 클래스 (win10)
-        // const val EXPLORER_CLASS = "CabinetWClass"
-        const val EXPLORER_CLASS = "Microsoft.UI.Content.DesktopChildSiteBridge" // win11
+        const val TB_GETBUTTONINFO = 0x43f
+        const val TB_BUTTONCOUNT = 0x418
+        const val TB_SETBUTTONINFO = 0x440
+
+        const val TBIF_IMAGE = 0x00000001
+        const val TBIF_TEXT = 0x00000002
+        const val TBIF_STATE = 0x00000004
+        const val TBIF_STYLE = 0x00000008
+        const val TBIF_LPARAM = 0x00000010
+        const val TBIF_COMMAND = 0x00000020
+        const val TBIF_SIZE = 0x00000040
+
+        const val I_IMAGECALLBACK = -1
 
         /**
          * Takes a snapshot of the specified processes, as well as the heaps, modules, and threads used by these processes.
