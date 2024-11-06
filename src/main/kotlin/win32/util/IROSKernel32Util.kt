@@ -2,10 +2,7 @@ package org.example.win32.util
 
 import com.sun.jna.platform.win32.Tlhelp32
 import com.sun.jna.platform.win32.WinDef.DWORD
-import com.sun.jna.platform.win32.WinDef.BOOL
-import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinNT.HANDLE
-import org.example.win32.const.Win32Const
 import org.example.win32.const.Win32Const.Companion.TH32CS_SNAPPROCESS
 import org.example.win32.data.ProcessInfo
 import org.example.win32.intf.IROSKernel32
@@ -42,11 +39,5 @@ class IROSKernel32Util {
 
             return processLst
         }
-
-        fun getProcessHandle(pid: Int): HANDLE = getProcessHandle(WinNT.PROCESS_QUERY_INFORMATION or WinNT.PROCESS_VM_READ, false, pid)
-
-        // dwDesiredAccess : access option
-        fun getProcessHandle(dwDesiredAccess: Int, bInheritHandle: Boolean, pid: Int): HANDLE =
-            IROSKernel32.INSTANCE.OpenProcess(DWORD(dwDesiredAccess.toLong()), BOOL(bInheritHandle), DWORD(pid.toLong()))
     }
 }

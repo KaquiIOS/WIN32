@@ -24,8 +24,6 @@ class CommonConst {
         // ComboboxEx32
         const val COMBO_BOX_EX_32 = "ComboBoxEx32"
 
-        val EXPLORER_PROCESS_NAME: String = "iprtcrsIgmprintxctrl.xgd"
-
         val PRT_DIAG_UI_VIEW_CLASS: String = "DUIViewWndClassName"
 
         val PRT_DIAG_FILE_NAME_CLASS: String = "Edit"
@@ -34,6 +32,6 @@ class CommonConst {
 
         val PRT_DIAG_PATH_EDIT_WRAPPER_CLASS: String = "Breadcrumb Parent"
 
-        val PRT_DIAG_PATH_EDIT_CLASS: String = "ToolbarWindow32"
+        val PRT_DIALOG_CAPTION: String = "다음 이름으로 프린터 출력 저장"
     }
 }

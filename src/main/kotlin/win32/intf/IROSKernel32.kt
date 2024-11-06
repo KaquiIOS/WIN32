@@ -1,9 +1,7 @@
 package org.example.win32.intf
 
 import com.sun.jna.Native
-import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.Tlhelp32
-import com.sun.jna.platform.win32.WinBase.SYSTEMTIME
 import com.sun.jna.platform.win32.WinDef.BOOL
 import com.sun.jna.platform.win32.WinDef.DWORD
 import com.sun.jna.platform.win32.WinNT
@@ -26,7 +24,6 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
         // Optional: wraps every call to the native library in a synchronized block, limiting native calls to one at a time
         // 선택 사항: 네이티브 라이브러리에 대한 모든 호출을 동기화된 블록으로 전달하여 네이티브 호출을 한 번에 하나로 제한합니다
         val SYNC_INSTANCE: IROSKernel32 = Native.synchronizedLibrary(INSTANCE) as IROSKernel32
-
     }
 
     fun CreateToolhelp32Snapshot(dwFlags: DWORD, th32ProcessID: DWORD): HANDLE
@@ -34,9 +31,6 @@ interface IROSKernel32 : StdCallLibrary, WinNT, Wincon {
     fun Process32First(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
 
     fun Process32Next(hSnapshot: HANDLE, lppe: Tlhelp32.PROCESSENTRY32): Boolean
-
-    // 특정 프로세스의 핸들을 얻어옴. 함수가 실패하면 반환 값은 NULL입니다. 확장 오류 정보를 가져오려면 GetLastError를 호출합니다.
-    fun OpenProcess(dwDesiredAccess: DWORD, bInheritHandle: BOOL, dwProcessId: DWORD): HANDLE
 
     // 핸들 닫기
     fun CloseHandle(hObject: HANDLE): BOOL
