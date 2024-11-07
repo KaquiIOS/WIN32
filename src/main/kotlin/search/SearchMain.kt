@@ -9,26 +9,24 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.chrome.ChromeOptions.LOGGING_PREFS
 import org.openqa.selenium.logging.LogType
-import org.openqa.selenium.logging.LoggingPreferences
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.FluentWait
-import org.openqa.selenium.support.ui.WebDriverWait
 import java.io.File
 import java.time.Duration
 import java.util.logging.Level
 
 
-
-fun test(corpNo: String) {
+fun test(corpNoLst: List<String>) {
 
     var startTime = System.currentTimeMillis()
 
     System.setProperty("webdriver.chrome.driver", File.separator.join(System.getProperty("user.dir"), "resource", "driver", "chromedriver.130.0.6723.69.exe" ))
 
-    val options = ChromeOptions()
-    options.setExperimentalOption("prefs", "profile.managed_default_content_settings.images" to 2)
-    options.addArguments("--headless=new")
-    options.addArguments("--blink-settings=imagesEnabled=false")
+    val options = ChromeOptions().apply {
+        setExperimentalOption("prefs", "profile.managed_default_content_settings.images" to 2)
+        addArguments("--disable-images", "--headless=new", "--blink-settings=imagesEnabled=false")
+    }
+
     options.setCapability(LOGGING_PREFS, mapOf(LogType.BROWSER to Level.ALL))
 
     // WebDriver 초기화
@@ -74,41 +72,49 @@ fun test(corpNo: String) {
         // 4. search by corp no
         val topHandle = driver.windowHandle
 
-        // move to inputFrame
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("inputFrame")))
-        driver.findElement(By.id("3Tab")).click()
-        driver.findElement(By.id("SANGHO_NUM")).sendKeys(corpNo)
-        driver.findElement(By.className("sbtn_bg02_action")).click()
+        // 최초 1회 초기화가 되어있으면 그 이후부턴 빠를 것 아닌가?
+        for(corpNo in corpNoLst) {
 
-        // move to top
-        driver.switchTo().window(topHandle)
+            val startTime2 = System.currentTimeMillis()
 
-        // move to resultFrame
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("resultFrame")))
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("frmOuterModal")))
+            // move to inputFrame
+            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("inputFrame")))
+            driver.findElement(By.id("3Tab")).click()
+            driver.findElement(By.id("SANGHO_NUM")).sendKeys(corpNo)
+            driver.findElement(By.className("sbtn_bg02_action")).click()
 
-        // 6. parse data
-        // CSS 선택자로 table 요소가 로드될 때까지 대기
-        val resultTable: WebElement = wait.until(ExpectedConditions.presenceOfElementLocated(
-            By.cssSelector(".list_table table:nth-of-type(2)")
-        ))
+            // move to top
+            driver.switchTo().window(topHandle)
 
-        val result: List<String> = resultTable.findElements(By.tagName("tr")).drop(1).map { it.text }
+            // move to resultFrame
+            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("resultFrame")))
+            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("frmOuterModal")))
 
-        println(result)
+            // 6. parse data
+            // CSS 선택자로 table 요소가 로드될 때까지 대기
+            val resultTable: WebElement = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.cssSelector(".list_table table:nth-of-type(2)")
+            ))
+
+            val result: List<String> = resultTable.findElements(By.tagName("tr")).drop(1).map { it.text }
+
+            println("$corpNo : ${(System.currentTimeMillis() - startTime2) / 1000}s")
+            println(result)
+
+            // move to top
+            driver.switchTo().window(topHandle)
+        }
 
     } catch (e: Exception) {
         e.printStackTrace()
     } finally {
 
-        println((System.currentTimeMillis() - startTime) / 1000)
+        println("total : ${(System.currentTimeMillis() - startTime) / 1000}s")
 
         driver.quit()
     }
 }
 
 fun main(args: Array<String>) {
-    for (item in listOf("114271-0001636", "200111-0018882")) {
-        test(item)
-    }
+    test(listOf("114271-0001636", "200111-0018882"))
 }
