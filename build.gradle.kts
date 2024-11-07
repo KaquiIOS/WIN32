@@ -18,7 +18,7 @@ dependencies {
     implementation("net.java.dev.jna:jna-platform:5.15.0")
 
     // Seleinum
-    implementation("org.seleniumhq.selenium:selenium-java:4.25.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.26.0")
 
     // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")

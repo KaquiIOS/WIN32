@@ -1,14 +1,17 @@
 package org.example.search
 
-import org.openqa.selenium.By
-import org.openqa.selenium.JavascriptExecutor
-import org.openqa.selenium.WebDriver
-import org.openqa.selenium.WebElement
+import org.example.win32.ext.join
+import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.chrome.ChromeOptions
+import org.openqa.selenium.chrome.ChromeOptions.LOGGING_PREFS
+import org.openqa.selenium.logging.LogType
+import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.FluentWait
-import org.openqa.selenium.support.ui.Wait
-import org.openqa.selenium.support.ui.WebDriverWait
+import java.io.File
 import java.time.Duration
+import java.util.*
+import kotlin.NoSuchElementException
 
 
 // 1. AnySign.mAnySignEnable 로 페이지 로딩이 되었는지 확인
@@ -17,21 +20,28 @@ import java.time.Duration
 // 4.
 
 
-fun test() {
+fun test(corpNo: String) {
 
-    System.setProperty("webdriver.chrome.driver", "C:\\Users\\JongseongWon\\InteliJProjects\\WIN32\\src\\main\\driver\\chromedriver.130.0.6723.69.exe")
+    System.setProperty("webdriver.chrome.driver", File.separator.join(System.getProperty("user.dir"), "resource", "driver", "chromedriver.130.0.6723.69.exe" ))
+
+    val options = ChromeOptions()
+    options.addArguments("--headless=new")
+    options.addArguments("--blink-settings=imagesEnabled=false")
+    options.setCapability(LOGGING_PREFS, mapOf(LogType.BROWSER to "ALL"))
 
     // WebDriver 초기화
-    val driver: WebDriver = ChromeDriver()
+    val driver: WebDriver = ChromeDriver(options)
 
     try {
 
+        // 1. Driver Open
         driver.get("http://www.iros.go.kr/PMainJ.jsp")
 
-        //val wait : Wait<WebDriver> = WebDriverWait(driver, Duration.ofSeconds(3))
+        // 2. Wait Until AnySign module load
         val wait: FluentWait<WebDriver> = FluentWait(driver)
             .withTimeout(Duration.ofSeconds(30))
-            .pollingEvery(Duration.ofMillis(300L))
+            .pollingEvery(Duration.ofMillis(150L))
+            .ignoring(NoSuchElementException::class.java)
 
         val isAnySignEnabled = wait.until { (it as JavascriptExecutor).executeScript("return window.AnySign && AnySign.mAnySignEnable === true;") as Boolean }
 
@@ -40,36 +50,68 @@ fun test() {
             driver.quit()
         }
 
-        val idInputTag = driver.findElement(By.id("id_user_id"))
-        idInputTag.sendKeys("kokoxg2")
+        // 3. switch to select pagehttp://www.iros.go.kr/PMainJ.jsp
+        (driver as JavascriptExecutor).executeScript("window.location = '/ifrontservlet?cmd=IISUGetCorpFrmCallC';")
 
-        val passwordInputTag = driver.findElement(By.id("password"))
-        passwordInputTag.sendKeys("Whdtjd1!q")
+        // 로그에 `AnySign_onmessage_01004` 메시지가 나타날 때까지 대기
+        val foundMessage = wait.until {
+            // BROWSER 로그 가져오기
+            val logs = driver.manage().logs().get(LogType.BROWSER)
 
-        // class가 "mt05"인 <li> 태그를 찾기
-        val liElement = driver.findElement(By.className("mt05"))
+            // 로그 중 `AnySign_onmessage_01004`가 포함된 메시지 찾기
+            logs.all.any { logEntry ->
+                logEntry.message.contains("AnySign_executeDecCallback")
+            }
+        }
 
-        // <a> 태그 내부의 onclick 속성 실행
-        val anchorElement: WebElement = liElement.findElement(By.tagName("a"))
-
-        // JavascriptExecutor를 사용하여 onclick 이벤트 호출
-        (driver as JavascriptExecutor).executeScript("arguments[0].click();", anchorElement)
-
-        val login = wait.until { (it as JavascriptExecutor).executeScript("return window.AnySign && AnySign.mAnySignEnable === true;") as Boolean }
-
-        if (!login) {
-            println("AnySign 모듈이 활성화 되지 않았습니다.")
+        if (!foundMessage) {
+            println("PageLoading 중 문제가 발생하였습니다.")
             driver.quit()
         }
 
+        // 4. search by corp no
+        val topHandle = driver.windowHandle
 
-        driver.quit()
+        // move to inputFrame
+        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("inputFrame")))
+        driver.findElement(By.id("3Tab")).click()
+        driver.findElement(By.id("SANGHO_NUM")).sendKeys(corpNo)
+        driver.findElement(By.className("sbtn_bg02_action")).click()
 
+        // move to top
+        driver.switchTo().window(topHandle)
+
+        // move to resultFrame
+        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("resultFrame")))
+        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("frmOuterModal")))
+
+        // 6. parse data
+        // CSS 선택자로 table 요소가 로드될 때까지 대기
+        val divElement: WebElement = wait.until(ExpectedConditions.presenceOfElementLocated(
+            By.className("list_table")
+        ))
+
+        val resultTable = divElement.findElements(By.tagName("table"))
+
+        if (resultTable.size > 1) {
+            val searchResult = resultTable.get(1)
+
+            val rows = searchResult.findElements(By.tagName("tr"))
+
+            if (rows.size > 1) {
+                for (idx in 1 until rows.size) {
+                    val cells = rows[idx].findElements(By.tagName("td"))
+                    println(cells.map { it.text })
+                }
+            }
+        }
     } catch (e: Exception) {
         e.printStackTrace()
+    } finally {
+        driver.quit()
     }
 }
 
 fun main(args: Array<String>) {
-    test()
+    test("114271-0001636")
 }
