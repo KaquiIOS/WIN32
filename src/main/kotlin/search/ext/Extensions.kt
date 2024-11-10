@@ -1,4 +1,4 @@
-package org.example.win32.ext
+package org.example.search.ext
 
 import org.openqa.selenium.By
 import org.openqa.selenium.NoSuchElementException
