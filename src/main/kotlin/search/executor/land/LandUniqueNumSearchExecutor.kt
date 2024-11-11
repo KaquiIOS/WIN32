@@ -1,5 +1,6 @@
 package org.example.search.executor.land
 
+import org.example.search.common.CommonUtil
 import org.example.search.driver.IROSDriver
 import org.example.search.option.LandSearchOption.LandUniqueNumSearchOption
 import org.openqa.selenium.By
@@ -9,24 +10,29 @@ class LandUniqueNumSearchExecutor(driver: IROSDriver, searchOption: LandUniqueNu
     LandBaseSearchExecutor(driver, searchOption) {
 
     override fun setInitConditionForSearch(): Boolean {
-        if (super.setInitConditionForSearch()) {
-            try {
-                driver.executeJavaScript("f_goPin_click();return true")
-                driver.switchToWindow(initPageHandle)
-                driver.waitForAll(
-                    listOf(
-                        ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("resultFrame")),
-                        ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("frmOuterModal"))
-                    )
-                )
-                return true
 
-            } catch (e: Exception) {
-                println("LandUniqueNumSearchExecutor setInitConditionForSearch exception : $e")
-                return false
+        try {
+
+            if(!driver.getCurrentUrl().contains("/frontservlet?cmd=RISUWelcomeViewC")) {
+                driver.pageMove(searchOption)
+                initPageHandle = driver.getWindowHandle()
             }
+
+            if(driver.getFrameName().isEmpty()) {
+                // page 구조가 inputFrame > inputFrame 으로 구성되어 있음
+                driver.switchToWindow(initPageHandle)
+                driver.switchToFrame("inputFrame")
+                driver.switchToFrame("inputFrame")
+            }
+
+            driver.executeJavaScript("f_goPin_click();return false;")
+
+            return true
+
+        } catch (e: Exception) {
+            println("LandUniqueNumSearchExecutor setInitConditionForSearch exception : $e")
+            return false
         }
-        return false
     }
 
     override fun search(): List<String> {
@@ -35,7 +41,18 @@ class LandUniqueNumSearchExecutor(driver: IROSDriver, searchOption: LandUniqueNu
             return listOf()
         }
 
+        driver.switchToWindow(initPageHandle)
+
         val castedSearchOption = (searchOption as LandUniqueNumSearchOption)
+
+        val waitResult = driver.waitForAll(listOf(
+            ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("inputFrame")),
+            ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("resultFrame")),
+            ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("frmOuterModal"))
+        ))
+
+        if (!waitResult)
+            return listOf()
 
         driver.findElementBy(By.id("inpPinNo")).clear()
         driver.findElementBy(By.id("inpPinNo")).sendKeys(castedSearchOption.uniqueNum)

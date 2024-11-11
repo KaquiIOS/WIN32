@@ -43,7 +43,5 @@ class CommonUtil {
         fun getPageUrl(initOption: InitOption) = this.getPageUrl(initOption.searchTab, initOption.searchCategory)
 
         fun getPageUrl(searchOption: SearchOption) = this.getPageUrl(searchOption.searchTab, searchOption.searchCategory)
-
     }
-
 }

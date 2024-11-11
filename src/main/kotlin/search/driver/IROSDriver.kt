@@ -38,7 +38,7 @@ class IROSDriver(private val initOption: InitOption) {
          * 3. --blink-settings=imagesEnabled=false: 이미지 설정 불허
          */
         val options = ChromeOptions().apply {
-            addArguments("--disable-images", /*"--headless=new",*/ "--blink-settings=imagesEnabled=false")
+            addArguments("--disable-images", "--headless=new", "--blink-settings=imagesEnabled=false")
         }
 
         options.setCapability(LOGGING_PREFS, mapOf(LogType.BROWSER to Level.parse(initOption.logLevel)))
@@ -61,6 +61,19 @@ class IROSDriver(private val initOption: InitOption) {
     fun findElementsBy(by: By): List<WebElement> = driver.findElements(by)
 
     fun getAlertMessage(): String = driver.switchTo().alert().text
+
+    fun getCurrentUrl(): String = driver.currentUrl ?: ""
+
+    fun getFrameName(): String {
+        return try {
+            when(val frameName = executeJavaScript("return window.frameElement").toString()) {
+                "null" -> ""
+                else -> frameName
+            }
+        } catch (e: Exception) {
+            ""
+        }
+    }
 
     fun findElementSafely(selector: By): WebElement? = try {
         driver.findElement(selector)
@@ -115,22 +128,16 @@ class IROSDriver(private val initOption: InitOption) {
 
         if(!url.isNullOrEmpty()) {
 
-            val isAnySignEnabled = waitPolicy.until { (it as JavascriptExecutor).executeScript("return window.AnySign && AnySign.mAnySignEnable === true;") as Boolean }
+            (driver as JavascriptExecutor).executeScript("window.location = 'http://www.iros.go.kr$url'")
 
-            if (!isAnySignEnabled) {
-                println("AnySign 모듈이 활성화 되지 않았습니다.")
-                driver.quit()
-                return false
+            try {
+                waitPolicy.until { (it as JavascriptExecutor).executeScript("return window.AnySign && AnySign.mAnySignEnable === true;") }
+            } catch (e: Exception) {
+                println("pageMove error : $e")
+                return  false
             }
 
-            (driver as JavascriptExecutor).executeScript("window.location = '$url'")
-
-            // TODO: 페이지 로딩 시점 확인 로직 다른 것도 생각해보기
-            val foundMessage = waitPolicy.until {
-                driver.manage().logs().get(LogType.BROWSER).all.any { log -> log.message.contains("AnySign_onmessage_01004") }
-            }
-
-            if (!foundMessage) {
+            if(!waitForPageLoad()) {
                 println("PageLoading 중 문제가 발생하였습니다.")
                 driver.quit()
                 return false
@@ -163,4 +170,18 @@ class IROSDriver(private val initOption: InitOption) {
         }
 
     fun wait(condition: ExpectedCondition<out SearchContext>): Boolean = waitForAll(listOf(condition))
+
+    fun waitForPageLoad(): Boolean {
+        return try {
+            waitPolicy.until(ExpectedCondition<Boolean> {
+                val anySignLoader = driver.findElement(By.id("AnySign4PCLoad"))
+                anySignLoader.findElements(By.cssSelector("*")).isEmpty()
+            })
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
+    fun quit() = driver.quit()
 }

@@ -36,6 +36,6 @@ package org.example.search.option
 data class InitOption(
     val searchTab: String,
     val searchCategory: String,
-    val refreshInterval: Int,
-    val logLevel: String
+    val refreshInterval: Int = 10,
+    val logLevel: String = "ALL"
 )

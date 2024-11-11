@@ -1,5 +1,6 @@
 package org.example.search.executor.corp
 
+import org.example.search.common.CommonUtil.Companion.getPageUrl
 import org.example.search.driver.IROSDriver
 import org.example.search.executor.BaseSearchExecutor
 import org.example.search.option.CorpSearchOption
@@ -11,31 +12,33 @@ import org.openqa.selenium.support.ui.Select
 abstract class CorpBaseSearchExecutor(driver: IROSDriver, searchOption: CorpSearchOption):
     BaseSearchExecutor(driver, searchOption) {
 
-    protected val initPageHandle: String = driver.getWindowHandle()
+    override fun setInitConditionForSearch(): Boolean {
+
+        val pageUrl = getPageUrl(searchOption.searchTab, searchOption.searchCategory)
+
+        try {
+            if (pageUrl == null || !driver.getCurrentUrl().contains(pageUrl)) {
+                driver.pageMove(searchOption)
+            }
+        } catch (e: Exception) {
+            println("CorpBaseSearchExecutor setInitConditionForSearch exception : $e")
+            return false
+        }
+
+        initPageHandle = driver.getWindowHandle()
+
+        return true
+    }
 
     override fun search(): List<String> {
 
         try {
-
             if(!setInitConditionForSearch()) {
                 return listOf()
             }
 
-            driver.findElementBy(By.id("SANGHO_NUM")).clear()
-            driver.findElementBy(By.id("SANGHO_NUM")).sendKeys((searchOption as CorpSearchOption).text)
-
-            return parseResult()
-
-        } catch (e: Exception) {
-            println("CorpBaseSearchExecutor setInitConditionForSearch exception : $e")
-            return listOf()
-        }
-    }
-
-    override fun setInitConditionForSearch(): Boolean {
-
-        try {
-            driver.findElementBy(By.id("${(searchOption).searchTab}Tab")).click()
+            driver.wait(ExpectedConditions.frameToBeAvailableAndSwitchToIt("inputFrame"))
+            driver.findElementBy(By.id("${(searchOption).searchCategory.last()}Tab")).click()
 
             val registryOfficeDropList = driver.findElementBy(By.id("DropList"))
             if (registryOfficeDropList.isEnabled) {
@@ -46,10 +49,11 @@ abstract class CorpBaseSearchExecutor(driver: IROSDriver, searchOption: CorpSear
             driver.findElementBy(By.id("SANGHO_NUM")).clear()
             driver.findElementBy(By.id("SANGHO_NUM")).sendKeys((searchOption as CorpSearchOption).text)
 
-            return true
+            return parseResult()
+
         } catch (e: Exception) {
             println("CorpBaseSearchExecutor setInitConditionForSearch exception : $e")
-            return false
+            return listOf()
         }
     }
 

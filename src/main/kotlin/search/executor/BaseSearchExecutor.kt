@@ -8,6 +8,8 @@ abstract class BaseSearchExecutor(
     protected val searchOption: SearchOption
 ) {
 
+    protected var initPageHandle: String = driver.getWindowHandle()
+
     abstract fun search(): List<String>
     abstract fun setInitConditionForSearch(): Boolean
     abstract fun applyDetailCondition(detailSearchOption: List<String>)

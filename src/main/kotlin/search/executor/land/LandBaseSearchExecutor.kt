@@ -10,20 +10,21 @@ import org.openqa.selenium.support.ui.ExpectedConditions
 abstract class LandBaseSearchExecutor(driver: IROSDriver, searchOption: LandSearchOption):
     BaseSearchExecutor(driver, searchOption) {
 
-    protected val initPageHandle: String = driver.getWindowHandle()
-
     abstract override fun search(): List<String>
 
     override fun setInitConditionForSearch(): Boolean {
 
-        driver.wait(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("inputFrame")))
+        val currentTab = try {
+            driver.switchToFrame("inputFrame")
+            driver.findElementBy(By.className("tab_on")).getAttribute("id")
+        } catch (e: Exception) {
+            ""
+        }
 
-        val currentTab = driver.findElementBy(By.className("tab_on")).getAttribute("id")
-
-        if (searchOption.searchCategory.last() != currentTab?.last()) {
-            driver.switchToWindow(initPageHandle)
+        if (currentTab == "" || searchOption.searchCategory.last() != currentTab?.last()) {
             if(!driver.pageMove(searchOption))
                 return false
+            initPageHandle = driver.getWindowHandle()
         }
 
         return true
@@ -59,16 +60,16 @@ abstract class LandBaseSearchExecutor(driver: IROSDriver, searchOption: LandSear
             driver.switchToWindow(initPageHandle)
 
             val waitResult = driver.waitForAll(listOf(
+                ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("inputFrame")),
                 ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("resultFrame")),
                 ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("frmOuterModal")),
-                ExpectedConditions.visibilityOfElementLocated(By.className("list_table")),
-                ExpectedConditions.visibilityOfElementLocated(By.tagName("tr"))
+                ExpectedConditions.visibilityOfElementLocated(By.className("list_table"))
             ))
 
             if (!waitResult)
                 return listOf()
 
-            driver.findElementBy(By.cssSelector(".list_table table:nth-of-type(2)")).let {
+            driver.findElementBy(By.cssSelector(".list_table table:nth-of-type(1)")).let {
                 return it.findElements(By.tagName("tr")).drop(1).map { tag -> tag.text }
             }
 
